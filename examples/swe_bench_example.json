@@ -1,0 +1,63 @@
+{
+  "reprobe_version": "0.1",
+  "result_id": "swebench-verified-claude-2026-05-01",
+  "identity": {
+    "benchmark": "swebench-verified",
+    "version": "v1",
+    "commit": "abcd1234",
+    "subset": "full",
+    "subset_rule": null,
+    "cardinality": 500,
+    "grader_version": "abcd1234",
+    "partial_credit": false
+  },
+  "harness": {
+    "scaffold": "swe-agent",
+    "scaffold_version": "1.0.0",
+    "system_prompt": null,
+    "system_prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "tools": ["bash", "edit", "submit"],
+    "max_steps": 50,
+    "max_tokens": null,
+    "max_wallclock_seconds": 1800,
+    "container_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "container_tag": "princeton-nlp/swe-agent:1.0.0"
+  },
+  "inference": {
+    "provider": "anthropic",
+    "model_alias": "claude-3-5-sonnet-20241022",
+    "engine": null,
+    "sampling": "greedy",
+    "temperature": 0.0,
+    "top_p": null,
+    "top_k": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "max_output_tokens": 4096,
+    "seed": null,
+    "passes_per_task": 1,
+    "aggregation": null,
+    "verifier_for_best_of_n": null,
+    "run_date": "2026-05-01"
+  },
+  "cost": {
+    "input_tokens": 12500000,
+    "output_tokens": 2300000,
+    "tool_calls": 4500,
+    "wallclock_seconds": 18200,
+    "dollar_cost_usd": 142.18,
+    "rate_source": "https://www.anthropic.com/pricing#anthropic-api"
+  },
+  "failures": {
+    "refusal": 3,
+    "loop": 12,
+    "tool_error": 21,
+    "env_error": 5,
+    "timeout": 7,
+    "wrong_state": 142
+  },
+  "headline_metric": {
+    "name": "resolved",
+    "value": 0.41
+  }
+}

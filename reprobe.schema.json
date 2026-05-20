@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mahdinaser/reprobe-audit/blob/main/reprobe.schema.json",
+  "title": "REPROBE Manifest",
+  "description": "Disclosure manifest for a single LLM agent benchmark run. Schema version 0.1.",
+  "type": "object",
+  "required": [
+    "reprobe_version",
+    "result_id",
+    "identity",
+    "harness",
+    "inference",
+    "cost",
+    "failures",
+    "headline_metric"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "reprobe_version": {
+      "type": "string",
+      "description": "Schema version this manifest conforms to (semver).",
+      "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "result_id": {
+      "type": "string",
+      "description": "Stable identifier for this result. Convention: <benchmark>-<model>-<YYYY-MM-DD>.",
+      "minLength": 1
+    },
+    "identity": {
+      "type": "object",
+      "description": "Benchmark identity card.",
+      "required": ["benchmark", "version", "subset", "cardinality", "grader_version", "partial_credit"],
+      "additionalProperties": false,
+      "properties": {
+        "benchmark": {
+          "type": "string",
+          "description": "Canonical benchmark name (e.g., 'swebench-verified', 'webarena')."
+        },
+        "version": {
+          "type": "string",
+          "description": "Release tag or version string of the benchmark."
+        },
+        "commit": {
+          "type": ["string", "null"],
+          "description": "Optional commit hash of the canonical benchmark repository at evaluation time."
+        },
+        "subset": {
+          "type": "string",
+          "description": "'full' or the name of a declared subset (e.g., 'first-100', 'lite', 'sampled')."
+        },
+        "subset_rule": {
+          "type": ["string", "null"],
+          "description": "Rule for subset selection (e.g., 'first', 'random_seed_42', 'stratified_by_difficulty'). Required if subset != 'full'."
+        },
+        "cardinality": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of tasks actually evaluated."
+        },
+        "grader_version": {
+          "type": "string",
+          "description": "Version tag or commit hash of the grader code, OR a hash of the LLM-judge prompt."
+        },
+        "partial_credit": {
+          "type": "boolean",
+          "description": "Whether the grader awards partial credit for partial task completion."
+        }
+      }
+    },
+    "harness": {
+      "type": ["object", "null"],
+      "description": "Harness / scaffold specification. May be null for non-agent evaluations.",
+      "required": ["scaffold", "scaffold_version", "tools", "max_steps"],
+      "additionalProperties": false,
+      "properties": {
+        "scaffold": {
+          "type": "string",
+          "description": "Scaffold name (e.g., 'swe-agent', 'browsergym', 'custom')."
+        },
+        "scaffold_version": {
+          "type": "string",
+          "description": "Version tag or commit hash of the scaffold."
+        },
+        "system_prompt": {
+          "type": ["string", "null"],
+          "description": "Verbatim system prompt. Prefer system_prompt_hash for large prompts."
+        },
+        "system_prompt_hash": {
+          "type": ["string", "null"],
+          "description": "SHA-256 hash of the verbatim system prompt.",
+          "pattern": "^sha256:[a-f0-9]{64}$|^$"
+        },
+        "tools": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of tool names available to the agent."
+        },
+        "max_steps": {
+          "type": ["integer", "null"],
+          "description": "Maximum agent steps before forced stop."
+        },
+        "max_tokens": {
+          "type": ["integer", "null"],
+          "description": "Optional global token cap for the agent loop."
+        },
+        "max_wallclock_seconds": {
+          "type": ["integer", "null"],
+          "description": "Optional wall-clock cap per task."
+        },
+        "container_digest": {
+          "type": ["string", "null"],
+          "description": "Content-addressed digest of the environment image, e.g., 'sha256:abc...'. Mutable tags should NOT be used here.",
+          "pattern": "^sha256:[a-f0-9]{64}$|^$"
+        },
+        "container_tag": {
+          "type": ["string", "null"],
+          "description": "Optional mutable tag for human readability. Reproducibility relies on container_digest, not this field."
+        }
+      }
+    },
+    "inference": {
+      "type": "object",
+      "description": "Inference-time configuration.",
+      "required": ["provider", "model_alias", "sampling", "passes_per_task", "run_date"],
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "Provider name (e.g., 'anthropic', 'openai', 'google', 'local-vllm')."
+        },
+        "model_alias": {
+          "type": "string",
+          "description": "Model alias as queried (e.g., 'claude-3-5-sonnet-20241022', 'gpt-4o-2024-08-06')."
+        },
+        "engine": {
+          "type": ["string", "null"],
+          "description": "Inference engine for open-weights models (e.g., 'vllm-0.5.0', 'transformers-4.40'). Null for hosted APIs."
+        },
+        "sampling": {
+          "type": "string",
+          "enum": ["greedy", "top_p", "top_k", "nucleus", "beam", "best_of_n"],
+          "description": "Sampling method used."
+        },
+        "temperature": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "top_p": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "top_k": {"type": ["integer", "null"], "minimum": 1},
+        "frequency_penalty": {"type": ["number", "null"]},
+        "presence_penalty": {"type": ["number", "null"]},
+        "max_output_tokens": {
+          "type": ["integer", "null"],
+          "description": "Per-call output token cap."
+        },
+        "seed": {
+          "type": ["integer", "null"],
+          "description": "Random seed if exposed by the provider. Null is an explicit declaration that the seed is not exposed (do not omit the field)."
+        },
+        "passes_per_task": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of inference passes per task. >1 implies an aggregation rule."
+        },
+        "aggregation": {
+          "type": ["string", "null"],
+          "enum": ["none", "mean", "majority", "best_of_n", null],
+          "description": "Aggregation across passes. Required if passes_per_task > 1."
+        },
+        "verifier_for_best_of_n": {
+          "type": ["string", "null"],
+          "description": "If aggregation == 'best_of_n', the verifier model/method identifier."
+        },
+        "run_date": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO date (YYYY-MM-DD) on which the evaluation was run. Required for closed-API correlation against provider changelogs.",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "description": "Cost reporting standard.",
+      "required": ["input_tokens", "output_tokens", "wallclock_seconds"],
+      "additionalProperties": false,
+      "properties": {
+        "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "tool_calls": {"type": ["integer", "null"], "minimum": 0},
+        "wallclock_seconds": {"type": ["number", "null"], "minimum": 0},
+        "dollar_cost_usd": {"type": ["number", "null"], "minimum": 0},
+        "rate_source": {
+          "type": ["string", "null"],
+          "description": "URL or identifier of the pricing page used to compute dollar_cost_usd."
+        }
+      }
+    },
+    "failures": {
+      "type": ["object", "null"],
+      "description": "Structured per-task failure breakdown. Keys are category names; values are integer counts.",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "headline_metric": {
+      "type": "object",
+      "description": "The single number this manifest is attached to.",
+      "required": ["name", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Metric name (e.g., 'resolved', 'success_rate', 'em_score')."
+        },
+        "value": {
+          "type": "number",
+          "description": "Metric value."
+        }
+      }
+    }
+  }
+}

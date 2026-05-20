@@ -1,0 +1,64 @@
+From: REPROBE harness hook example
+Subject: [PATCH] Emit a REPROBE manifest at the end of each BrowserGym run
+
+Illustrative patch against a BrowserGym-style harness. Reuses
+the same `emit_manifest` helper as the SWE-agent patch, with
+the harness fields adapted for web environments (container
+digest is the WebArena Docker image used).
+
+The patch is illustrative; line numbers and import paths will
+need adjustment against the current upstream tree.
+---
+ browsergym/runner.py | 22 ++++++++++++++++++++++
+ browsergym/reprobe.py |  6 ++++++
+ 2 files changed, 28 insertions(+)
+ create mode 100644 browsergym/reprobe.py
+
+diff --git a/browsergym/runner.py b/browsergym/runner.py
+--- a/browsergym/runner.py
++++ b/browsergym/runner.py
+@@ -8,6 +8,7 @@ from typing import Dict
+ from .env import WebArenaEnv
+ from .agent import Agent
+ from .config import RunConfig
++from .reprobe import emit_web_manifest
+
+
+ def run_task(cfg: RunConfig, env: WebArenaEnv, agent: Agent) -> Dict:
+@@ -34,4 +35,25 @@ def run_task(cfg: RunConfig, env: WebArenaEnv, agent: Agent) -> Dict:
+         observation, reward, done, info = env.step(action)
+         if done:
+             break
++
++    # --- REPROBE hook ---
++    emit_web_manifest(
++        out_dir=cfg.results_dir,
++        result_id=f"webarena-{cfg.model}-{cfg.task_id}",
++        benchmark=cfg.benchmark_name,
++        benchmark_version=cfg.benchmark_version,
++        subset_cardinality=cfg.subset_size,
++        scaffold="browsergym",
++        scaffold_version=cfg.scaffold_version,
++        tools=cfg.action_set,
++        max_steps=cfg.max_steps,
++        model_alias=cfg.model,
++        sampling=cfg.sampling,
++        temperature=cfg.temperature,
++        usage=agent.usage_summary(),
++        failures=env.failure_summary(),
++        score=info.get("score", 0.0),
++        container_digest=env.image_digest(),
++    )
+     return info
+diff --git a/browsergym/reprobe.py b/browsergym/reprobe.py
+new file mode 100644
+--- /dev/null
++++ b/browsergym/reprobe.py
+@@ -0,0 +1,6 @@
++"""Thin re-export so the same emitter is callable from BrowserGym.
++
++Import the canonical implementation from the reprobe-audit
++repository:
++    pip install reprobe-audit  # (planned)
++"""
++from reprobe.emitter import emit_manifest as emit_web_manifest

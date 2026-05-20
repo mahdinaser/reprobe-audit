@@ -1,0 +1,56 @@
+{
+  "reprobe_version": "0.1",
+  "result_id": "example-minimal-2026-05-19",
+  "identity": {
+    "benchmark": "swebench-verified",
+    "version": "v1",
+    "commit": null,
+    "subset": "first-100",
+    "subset_rule": "first",
+    "cardinality": 100,
+    "grader_version": "v1",
+    "partial_credit": false
+  },
+  "harness": {
+    "scaffold": "swe-agent",
+    "scaffold_version": "1.0.0",
+    "system_prompt": null,
+    "system_prompt_hash": "",
+    "tools": ["bash", "edit", "submit"],
+    "max_steps": 50,
+    "max_tokens": null,
+    "max_wallclock_seconds": null,
+    "container_digest": "",
+    "container_tag": "princeton-nlp/swe-agent:1.0.0"
+  },
+  "inference": {
+    "provider": "anthropic",
+    "model_alias": "claude-3-5-sonnet-20241022",
+    "engine": null,
+    "sampling": "greedy",
+    "temperature": 0.0,
+    "top_p": null,
+    "top_k": null,
+    "frequency_penalty": null,
+    "presence_penalty": null,
+    "max_output_tokens": 4096,
+    "seed": null,
+    "passes_per_task": 1,
+    "aggregation": null,
+    "verifier_for_best_of_n": null,
+    "run_date": "2026-05-01"
+  },
+  "cost": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "tool_calls": null,
+    "wallclock_seconds": null,
+    "dollar_cost_usd": null,
+    "rate_source": null
+  },
+  "failures": null,
+  "headline_metric": {
+    "name": "resolved",
+    "value": 0.41
+  }
+}
